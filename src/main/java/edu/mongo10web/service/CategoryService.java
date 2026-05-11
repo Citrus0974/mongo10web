@@ -1,6 +1,7 @@
 package edu.mongo10web.service;
 
 import edu.mongo10web.entity.Category;
+import edu.mongo10web.exception.NotFoundInRepositoryException;
 import edu.mongo10web.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class CategoryService {
     }
 
     public Category getById(String id){
-        return  categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
+        return  categoryRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
     }
 
     public Category update(String id, Category updatedCategory){

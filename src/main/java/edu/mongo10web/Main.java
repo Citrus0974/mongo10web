@@ -21,7 +21,7 @@ public class Main {
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(Main.class, args);
     }
-    
+
     @Bean
     ApplicationRunner runner(CategoryRepository repository, ProductRepository productRepository, SupplyRepository supplyRepository){
         return args -> {

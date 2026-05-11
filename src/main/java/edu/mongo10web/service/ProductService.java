@@ -1,11 +1,14 @@
 package edu.mongo10web.service;
 
 import edu.mongo10web.entity.Product;
+import edu.mongo10web.exception.NotFoundInRepositoryException;
 import edu.mongo10web.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ProductService {
     private final ProductRepository productRepository;
 
@@ -23,7 +26,7 @@ public class ProductService {
     }
 
     public Product getById(String id){
-        return  productRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
+        return  productRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
     }
 
     public Product update(String id, Product updatedProduct){
