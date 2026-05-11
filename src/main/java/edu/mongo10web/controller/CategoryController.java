@@ -2,6 +2,8 @@ package edu.mongo10web.controller;
 
 import edu.mongo10web.entity.Category;
 import edu.mongo10web.service.CategoryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +38,13 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id){
+    public ResponseEntity<Category> delete(@PathVariable String id){
         categoryService.delete(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/name/{name}")
+    public List<Category> getByName(@PathVariable String name){
+        return categoryService.getByName(name);
     }
 }

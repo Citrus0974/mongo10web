@@ -37,6 +37,7 @@ public class Main {
 
             Product product = new Product("default milk", "local", 150, category);
             productRepository.save(product);
+            productRepository.save(new Product("newmilk", "kto", 40, category));
             System.out.println("findAll <- Product");
             productRepository.findAll().forEach(System.out::println);
             System.out.println();

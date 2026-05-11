@@ -1,6 +1,8 @@
 package edu.mongo10web.service;
 
 import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
+import edu.mongo10web.exception.InvalidDataFormatException;
 import edu.mongo10web.exception.NotFoundInRepositoryException;
 import edu.mongo10web.repository.SupplyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ public class SupplyService {
     }
 
     public Supply create(Supply supply){
+        if(supply.getProduct() == null || supply.getStatus() == null) throw new InvalidDataFormatException();
+        if(supply.getQuantity() == null || supply.getQuantity() <= 0) throw new InvalidDataFormatException();
         return this.supplyRepository.save(supply);
     }
 
@@ -26,10 +30,21 @@ public class SupplyService {
     }
 
     public Supply getById(String id){
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
         return  supplyRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
     }
 
+    public List<Supply> getByStatus(SupplyStatus status){
+        return supplyRepository.findByStatus(status);
+    }
+
+    public List<Supply> getByProductName(String productName){
+        return supplyRepository.findByProductName(productName);
+    }
+
     public Supply update(String id, Supply updatedSupply){
+        if(updatedSupply.getProduct() == null || updatedSupply.getStatus() == null) throw new InvalidDataFormatException();
+        if(updatedSupply.getQuantity() == null || updatedSupply.getQuantity() <= 0) throw new InvalidDataFormatException();
         Supply supply = getById(id);
         supply.setProduct(updatedSupply.getProduct());
         supply.setStatus(updatedSupply.getStatus());

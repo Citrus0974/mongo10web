@@ -1,6 +1,7 @@
 package edu.mongo10web.controller;
 
 import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
 import edu.mongo10web.service.SupplyService;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,5 +39,15 @@ public class SupplyController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         supplyService.delete(id);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<Supply> getByStatus(@PathVariable SupplyStatus status){
+        return supplyService.getByStatus(status);
+    }
+
+    @GetMapping("/productName/{name}")
+    public List<Supply> getByStatus(@PathVariable String name){
+        return supplyService.getByProductName(name);
     }
 }
