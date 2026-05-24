@@ -7,22 +7,37 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoExceptionTranslator;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.RouteMatcher;
 
 import java.util.Map;
 
 public class RoleRoutingMongoDatabaseFactory implements MongoDatabaseFactory {
 
-    private final Map<RoleRoutingContext.Role, MongoDatabaseFactory> factories;
+    private final Map<String, MongoDatabaseFactory> factories;
     private final PersistenceExceptionTranslator exceptionTranslator = new MongoExceptionTranslator();
 
-    public RoleRoutingMongoDatabaseFactory(Map<RoleRoutingContext.Role, MongoDatabaseFactory> factories) {
+    public RoleRoutingMongoDatabaseFactory(Map<String, MongoDatabaseFactory> factories) {
         this.factories = factories;
     }
 
     private MongoDatabaseFactory getVisibleFactory() {
-        RoleRoutingContext.Role role = RoleRoutingContext.getRole();
-        return factories.getOrDefault(role, factories.get(RoleRoutingContext.Role.UNAUTHORIZED));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null ||!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return factories.get("GUEST");
+        }
+
+        String role = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("UNAUTHORIZED")
+                .replace("ROLE_", "");
+
+        return factories.getOrDefault(role, factories.get("GUEST"));
     }
 
     @Override

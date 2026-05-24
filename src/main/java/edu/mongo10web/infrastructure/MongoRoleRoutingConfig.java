@@ -49,14 +49,14 @@ public class MongoRoleRoutingConfig {
     @Bean
     @Primary
     public MongoDatabaseFactory mongoDatabaseFactory() {
-        Map<RoleRoutingContext.Role, MongoDatabaseFactory> factories = new HashMap<>();
+        Map<String, MongoDatabaseFactory> factories = new HashMap<>();
         String guestUri = String.format("mongodb://%s:%d/%s", host, port, database);
-        factories.put(RoleRoutingContext.Role.UNAUTHORIZED, new SimpleMongoClientDatabaseFactory(guestUri));
-        factories.put(RoleRoutingContext.Role.SUPPLIER, new SimpleMongoClientDatabaseFactory(
+        factories.put("UNAUTHORIZED", new SimpleMongoClientDatabaseFactory(guestUri));
+        factories.put("SUPPLIER", new SimpleMongoClientDatabaseFactory(
                 MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", supplierLogin, supplierPassword, host, port, database)), database));
-        factories.put(RoleRoutingContext.Role.STOREKEEPER, new SimpleMongoClientDatabaseFactory(
+        factories.put("STOREKEEPER", new SimpleMongoClientDatabaseFactory(
                 MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", storekeeperLogin, storekeeperPassword, host, port, database)), database));
-        factories.put(RoleRoutingContext.Role.MANAGER, new SimpleMongoClientDatabaseFactory(
+        factories.put("MANAGER", new SimpleMongoClientDatabaseFactory(
                 MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", managerLogin, managerPassword, host, port, database)), database));
 
         return new RoleRoutingMongoDatabaseFactory(factories);

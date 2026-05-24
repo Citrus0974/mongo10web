@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-@Component
+//@Component
 public class RoleRoutingInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -14,11 +14,11 @@ public class RoleRoutingInterceptor implements HandlerInterceptor {
         if (session != null) {
             RoleRoutingContext.Role role = (RoleRoutingContext.Role) session.getAttribute("user_role");
             if (role!= null) {
-                RoleRoutingContext.setRole(role);
+//                RoleRoutingContext.setRole(role);
                 return true;
             }
         }
-        RoleRoutingContext.setRole(RoleRoutingContext.Role.UNAUTHORIZED);
+//        RoleRoutingContext.setRole(RoleRoutingContext.Role.UNAUTHORIZED);
         return true;
     }
 }
