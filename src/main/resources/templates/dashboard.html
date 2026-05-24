@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Панель управления складом</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    </head>
+    <body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand">Управление базой данных склада</span>
+            <form th:action="@{/auth/logout}" method="post" class="d-flex">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Выйти из профиля</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div th:if="${databaseError}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h4 class="alert-heading">Ошибка!</h4>
+            <p th:text="${databaseError}"></p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Поставки (Supplies)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/dashboard/deliveries/create}" method="post" class="mb-3 p-3 bg-light rounded">
+                            <h6>Добавить поставку</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" name="productId" class="form-control form-control-sm" placeholder="ID товара" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" name="quantity" class="form-control form-control-sm" placeholder="Количество" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-success btn-sm w-100">Создать</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <table class="table table-hover table-sm">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ID Товара</th>
+                                <th>Кол-во</th>
+                                <th>Действия</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="delivery : ${deliveries}">
+                                <td th:text="${delivery.id}"></td>
+                                <td th:text="${delivery.productId}"></td>
+                                <td th:text="${delivery.quantity}"></td>
+                                <td>
+                                    <form th:action="@{/dashboard/deliveries/delete/{id}(id=${delivery.id})}" method="post">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить?')">Удалить</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Каталог товаров (Products)</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Наименование</th>
+                                <th>Цена</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="product : ${products}">
+                                <td th:text="${product.id}"></td>
+                                <td th:text="${product.name}"></td>
+                                <td th:text="${product.price}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>
