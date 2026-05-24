@@ -1,10 +1,7 @@
 package edu.mongo10web;
 
 
-import edu.mongo10web.entity.Category;
-import edu.mongo10web.entity.Product;
-import edu.mongo10web.entity.Supply;
-import edu.mongo10web.entity.SupplyStatus;
+import edu.mongo10web.entity.*;
 import edu.mongo10web.repository.CategoryRepository;
 import edu.mongo10web.repository.ProductRepository;
 import edu.mongo10web.repository.SupplyRepository;
@@ -48,6 +45,23 @@ public class Main {
             System.out.println("findAll <- Supply");
             supplyRepository.findAll().forEach(System.out::println);
             System.out.println();
+        };
+    }
+
+    @Bean
+    public ApplicationRunner userInitializer(edu.mongo10web.repository.UserRepository userRepository,
+                                             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+        return args -> {
+            // Очищаем старых пользователей (для тестов безопасности) и заносим новых
+            userRepository.deleteAll();
+
+            // Пароль для всех учетных записей: "password"
+            userRepository.save(new User(null, "supplier", passwordEncoder.encode("password"), "SUPPLIER"));
+            userRepository.save(new User(null, "storekeeper", passwordEncoder.encode("password"), "STOREKEEPER"));
+            userRepository.save(new User(null, "manager", passwordEncoder.encode("password"), "MANAGER"));
+
+            System.out.println("=== ТЕСТОВЫЕ ПОЛЬЗОВАТЕЛИ СУБД УСПЕШНО ЗАПИСАНЫ ===");
+            System.out.println("Логины: supplier / storekeeper / manager. Пароль у всех: password");
         };
     }
 }

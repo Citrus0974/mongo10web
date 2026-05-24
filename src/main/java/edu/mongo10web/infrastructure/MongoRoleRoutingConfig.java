@@ -45,13 +45,19 @@ public class MongoRoleRoutingConfig {
     @Value("${spring.mongodb.custom.manager-password}")
     private String managerPassword;
 
+    @Value("${spring.mongodb.custom.unauthorized-login}")
+    private String unauthorizedLogin;
+
+    @Value("${spring.mongodb.custom.unauthorized-password}")
+    private String unauthorizedPassword;
+
 
     @Bean
     @Primary
     public MongoDatabaseFactory mongoDatabaseFactory() {
         Map<String, MongoDatabaseFactory> factories = new HashMap<>();
-        String guestUri = String.format("mongodb://%s:%d/%s", host, port, database);
-        factories.put("UNAUTHORIZED", new SimpleMongoClientDatabaseFactory(guestUri));
+        factories.put("UNAUTHORIZED", new SimpleMongoClientDatabaseFactory(
+                MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", unauthorizedLogin, unauthorizedPassword, host, port, database)), database));
         factories.put("SUPPLIER", new SimpleMongoClientDatabaseFactory(
                 MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", supplierLogin, supplierPassword, host, port, database)), database));
         factories.put("STOREKEEPER", new SimpleMongoClientDatabaseFactory(

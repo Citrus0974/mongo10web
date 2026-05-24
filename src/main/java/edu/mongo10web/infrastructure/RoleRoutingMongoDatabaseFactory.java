@@ -28,7 +28,7 @@ public class RoleRoutingMongoDatabaseFactory implements MongoDatabaseFactory {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null ||!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            return factories.get("GUEST");
+            return factories.get("UNAUTHORIZED");
         }
 
         String role = auth.getAuthorities().stream()
@@ -37,7 +37,7 @@ public class RoleRoutingMongoDatabaseFactory implements MongoDatabaseFactory {
                 .orElse("UNAUTHORIZED")
                 .replace("ROLE_", "");
 
-        return factories.getOrDefault(role, factories.get("GUEST"));
+        return factories.getOrDefault(role, factories.get("UNAUTHORIZED"));
     }
 
     @Override
