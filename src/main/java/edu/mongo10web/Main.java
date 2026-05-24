@@ -22,7 +22,7 @@ public class Main {
         ApplicationContext ctx = SpringApplication.run(Main.class, args);
     }
 
-    @Bean
+//    @Bean
     ApplicationRunner runner(CategoryRepository repository, ProductRepository productRepository, SupplyRepository supplyRepository){
         return args -> {
             repository.deleteAll();
