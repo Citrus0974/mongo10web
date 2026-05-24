@@ -1,0 +1,1037 @@
+﻿package edu.mongo10web;
+
+
+import edu.mongo10web.entity.*;
+import edu.mongo10web.repository.CategoryRepository;
+import edu.mongo10web.repository.ProductRepository;
+import edu.mongo10web.repository.SupplyRepository;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+
+import java.time.LocalDateTime;
+
+@SpringBootApplication
+public class Main {
+    public static void main(String[] args) {
+        ApplicationContext ctx = SpringApplication.run(Main.class, args);
+    }
+
+//    @Bean
+    ApplicationRunner runner(CategoryRepository repository, ProductRepository productRepository, SupplyRepository supplyRepository){
+        return args -> {
+            repository.deleteAll();
+            productRepository.deleteAll();
+            supplyRepository.deleteAll();
+            Category category = new Category("milk", "milk products", "СЃРєРѕСЂРѕРїРѕСЂС‚СЏС‰РёРµСЃСЏ РїСЂРѕРґСѓРєС‚С‹");
+            repository.save(category);
+            repository.save(new Category("fruit", "fruits and vegetables", "СЂР°Р·РЅС‹Рµ С„СЂСѓРєС‚С‹ РѕРІРѕС‰Рё"));
+            System.out.println("findAll <- Category");
+            repository.findAll().forEach(System.out::println);
+            System.out.println();
+
+            Product product = new Product("default milk", "local", 150, category);
+            productRepository.save(product);
+            productRepository.save(new Product("newmilk", "kto", 40, category));
+            System.out.println("findAll <- Product");
+            productRepository.findAll().forEach(System.out::println);
+            System.out.println();
+
+            Supply supply = new Supply(product, 50, SupplyStatus.CREATED, null, null);
+            supplyRepository.save(supply);
+            supplyRepository.save(new Supply(product, 45, SupplyStatus.PLACED, LocalDateTime.now(), null));
+            System.out.println("findAll <- Supply");
+            supplyRepository.findAll().forEach(System.out::println);
+            System.out.println();
+        };
+    }
+
+    @Bean
+    public ApplicationRunner userInitializer(edu.mongo10web.repository.UserRepository userRepository,
+                                             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+        return args -> {
+            // РћС‡РёС‰Р°РµРј СЃС‚Р°СЂС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ (РґР»СЏ С‚РµСЃС‚РѕРІ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё) Рё Р·Р°РЅРѕСЃРёРј РЅРѕРІС‹С…
+            userRepository.deleteAll();
+
+            // РџР°СЂРѕР»СЊ РґР»СЏ РІСЃРµС… СѓС‡РµС‚РЅС‹С… Р·Р°РїРёСЃРµР№: "password"
+            userRepository.save(new User(null, "supplier", passwordEncoder.encode("password"), "SUPPLIER"));
+            userRepository.save(new User(null, "storekeeper", passwordEncoder.encode("password"), "STOREKEEPER"));
+            userRepository.save(new User(null, "manager", passwordEncoder.encode("password"), "MANAGER"));
+
+            System.out.println("=== РўР•РЎРўРћР’Р«Р• РџРћР›Р¬Р—РћР’РђРўР•Р›Р РЎРЈР‘Р” РЈРЎРџР•РЁРќРћ Р—РђРџРРЎРђРќР« ===");
+            System.out.println("Р›РѕРіРёРЅС‹: supplier / storekeeper / manager. РџР°СЂРѕР»СЊ Сѓ РІСЃРµС…: password");
+        };
+    }
+}
+
+
+package edu.mongo10web.controller;
+
+import edu.mongo10web.entity.Category;
+import edu.mongo10web.service.CategoryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/category")
+public class CategoryController {
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
+
+    @PostMapping
+    public Category create(@RequestBody Category category) {
+        return categoryService.create(category);
+    }
+
+    @GetMapping
+    public List<Category> getAll(){
+        return categoryService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Category getById(@PathVariable String id){
+        return categoryService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Category update(@PathVariable String id, @RequestBody Category category){
+        return categoryService.update(id, category);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Category> delete(@PathVariable String id){
+        categoryService.delete(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/name/{name}")
+    public List<Category> getByName(@PathVariable String name){
+        return categoryService.getByName(name);
+    }
+}
+
+
+package edu.mongo10web.controller;
+
+import edu.mongo10web.entity.Product;
+import edu.mongo10web.service.ProductService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/product")
+public class ProductController {
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @PostMapping
+    public Product create(@RequestBody Product product) {
+        return productService.create(product);
+    }
+
+    @GetMapping
+    public List<Product> getAll() {
+        return productService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Product getById(@PathVariable String id) {
+        return productService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Product update(@PathVariable String id, @RequestBody Product product) {
+        return productService.update(id, product);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        productService.delete(id);
+    }
+
+    @GetMapping("/name/{name}")
+    public List<Product> getByName(@PathVariable String name) {
+        return productService.getByName(name);
+    }
+}
+
+
+package edu.mongo10web.controller;
+
+import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
+import edu.mongo10web.service.SupplyService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/supply")
+public class SupplyController {
+    private final SupplyService supplyService;
+
+    public SupplyController(SupplyService supplyService) {
+        this.supplyService = supplyService;
+    }
+
+    @PostMapping
+    public Supply create(@RequestBody Supply supply) {
+        return supplyService.create(supply);
+    }
+
+    @GetMapping
+    public List<Supply> getAll() {
+        return supplyService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Supply getById(@PathVariable String id) {
+        return supplyService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Supply update(@PathVariable String id, @RequestBody Supply supply) {
+        return supplyService.update(id, supply);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        supplyService.delete(id);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<Supply> getByStatus(@PathVariable SupplyStatus status){
+        return supplyService.getByStatus(status);
+    }
+
+    @GetMapping("/productName/{name}")
+    public List<Supply> getByStatus(@PathVariable String name){
+        return supplyService.getByProductName(name);
+    }
+}
+
+
+package edu.mongo10web.controller;
+
+import edu.mongo10web.entity.Category;
+import edu.mongo10web.entity.Product;
+import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
+import edu.mongo10web.service.CategoryService;
+import edu.mongo10web.service.ProductService;
+import edu.mongo10web.service.SupplyService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+
+@Controller
+@RequestMapping
+public class WebController {
+    private final ProductService productService;
+    private final CategoryService categoryService;
+    private final SupplyService supplyService;
+
+    public WebController(ProductService productService, CategoryService categoryService, SupplyService supplyService) {
+        this.productService = productService;
+        this.categoryService = categoryService;
+        this.supplyService = supplyService;
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
+
+    @GetMapping("/dashboard")
+    public String showDashboard(Model model, HttpSession session) {
+
+        model.addAttribute("products", productService.getAll());
+        model.addAttribute("deliveries", supplyService.getAll());
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(auth);
+        System.out.println(auth.getAuthorities().stream().map(a -> a.getAuthority()).toList());
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPPLIER"))) {
+            model.addAttribute("categories", Collections.emptyList());
+            System.out.println("inside if");
+        } else{
+            model.addAttribute("categories", categoryService.getAll());
+        }
+        return "dashboard";
+    }
+
+    // --- CRUD РџРћРЎРўРђР’РћРљ (SUPPLY) ---
+    @PostMapping("/dashboard/deliveries/create")
+    public String createDelivery(@RequestParam String productId, @RequestParam Integer quantity) {
+        Product product = productService.getById(productId);
+        Supply supply = new Supply(product, quantity, SupplyStatus.CREATED, LocalDateTime.now(), null);
+        supplyService.create(supply);
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/dashboard/deliveries/delete/{id}")
+    public String deleteDelivery(@PathVariable String id) {
+        supplyService.delete(id);
+        return "redirect:/dashboard";
+    }
+
+    // --- CRUD РўРћР’РђР РћР’ (PRODUCT) ---
+    @PostMapping("/dashboard/products/create")
+    public String createProduct(@RequestParam String name,
+                                @RequestParam String manufacturer,
+                                @RequestParam Integer cost,
+                                @RequestParam String categoryId) {
+        Category category = categoryService.getById(categoryId);
+        Product product = new Product(name, manufacturer, cost, category);
+        productService.create(product);
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/dashboard/products/delete/{id}")
+    public String deleteProduct(@PathVariable String id) {
+        productService.delete(id);
+        return "redirect:/dashboard";
+    }
+
+    // --- CRUD РљРђРўР•Р“РћР РР™ (CATEGORY) ---
+    @PostMapping("/dashboard/categories/create")
+    public String createCategory(@RequestParam String name,
+                                 @RequestParam String description,
+                                 @RequestParam String criteries) {
+        Category category = new Category(name, description, criteries);
+        categoryService.create(category);
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/dashboard/categories/delete/{id}")
+    public String deleteCategory(@PathVariable String id) {
+        categoryService.delete(id);
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/auth/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+}
+
+
+package edu.mongo10web.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Category {
+    @Id
+    private String id;
+    private String name;
+    private String description;
+    private String criteries;
+
+    public Category(String name, String description, String criteries) {
+        this.name = name;
+        this.description = description;
+        this.criteries = criteries;
+    }
+}
+
+
+package edu.mongo10web.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Product {
+    @Id
+    private String id;
+    private String name;
+    String manufacturer;
+    private Integer cost;
+    @DocumentReference
+    private Category category;
+
+    public Product(String name, String manufacturer, Integer cost, Category category) {
+        this.name = name;
+        this.manufacturer = manufacturer;
+        this.cost = cost;
+        this.category = category;
+    }
+}
+
+
+package edu.mongo10web.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+import java.time.LocalDateTime;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Supply {
+    @Id
+    private String id;
+    @DocumentReference
+    private Product product;
+    private Integer quantity;
+    private SupplyStatus status;
+    private LocalDateTime arriveDateTime;
+    private LocalDateTime sendDateTime;
+
+    public Supply(Product product, Integer quantity, SupplyStatus status, LocalDateTime arriveDateTime, LocalDateTime sendDateTime) {
+        this.product = product;
+        this.quantity = quantity;
+        this.status = status;
+        this.arriveDateTime = arriveDateTime;
+        this.sendDateTime = sendDateTime;
+    }
+}
+
+
+package edu.mongo10web.entity;
+
+public enum SupplyStatus {
+    CREATED, PLACED, RESERVED, GONE, DISPOSED
+}
+
+
+package edu.mongo10web.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class User {
+    @Id
+    private String id;
+    private String username;
+    private String password;
+    private String role;
+}
+
+
+package edu.mongo10web.exception;
+
+public class ConflictDataException extends RuntimeException {
+    public ConflictDataException(String message) {
+        super(message);
+    }
+
+    public ConflictDataException() {
+    }
+
+    public ConflictDataException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ConflictDataException(Throwable cause) {
+        super(cause);
+    }
+}
+
+
+package edu.mongo10web.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class CustomExceptionsHandler {
+    @ExceptionHandler(NotFoundInRepositoryException.class)
+    public ResponseEntity<?> handleNotFound(NotFoundInRepositoryException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @ExceptionHandler(InvalidDataFormatException.class)
+    public ResponseEntity<?> handleInvalidFormat(InvalidDataFormatException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+    }
+
+    @ExceptionHandler(ConflictDataException.class)
+    public ResponseEntity<?> handleConflict(ConflictDataException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+}
+
+
+package edu.mongo10web.exception;
+
+public class InvalidDataFormatException extends RuntimeException{
+    public InvalidDataFormatException() {
+    }
+
+    public InvalidDataFormatException(String message) {
+        super(message);
+    }
+
+    public InvalidDataFormatException(Throwable cause) {
+        super(cause);
+    }
+
+    public InvalidDataFormatException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
+package edu.mongo10web.exception;
+
+import com.mongodb.MongoCommandException;
+import org.springframework.data.mongodb.UncategorizedMongoDbException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@ControllerAdvice
+public class MongoDatabaseExceptionHandler {
+    @ExceptionHandler(UncategorizedMongoDbException.class)
+    public String handleMongoException(UncategorizedMongoDbException e, RedirectAttributes redirectAttributes){
+        Throwable rootCause = e.getMostSpecificCause();
+        String displayMessage = "Database error. ";
+        if (rootCause instanceof MongoCommandException) {
+            MongoCommandException mongoEx = (MongoCommandException) rootCause;
+            if(mongoEx.getErrorCode()==13) displayMessage += "Access denied. Error code: " + mongoEx.getErrorCode() + " " + mongoEx.getErrorCodeName();
+            else displayMessage += "Unknown error. Error code: " + mongoEx.getErrorCode() + " " + mongoEx.getErrorCodeName() + " " + mongoEx.getErrorMessage();
+        } else {
+            displayMessage += "Unknown system error: " + e.getMessage();
+        }
+        redirectAttributes.addFlashAttribute("databaseError", displayMessage);
+        return "redirect:/dashboard";
+    }
+}
+
+
+package edu.mongo10web.exception;
+
+public class NotFoundInRepositoryException extends RuntimeException {
+    public NotFoundInRepositoryException(String message) {
+        super(message);
+    }
+
+    public NotFoundInRepositoryException() {
+    }
+
+    public NotFoundInRepositoryException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NotFoundInRepositoryException(Throwable cause) {
+        super(cause);
+    }
+}
+
+
+package edu.mongo10web.infrastructure;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Configuration
+public class MongoRoleRoutingConfig {
+    @Value("${spring.mongodb.host:localhost:localhost}")
+    private String host;
+
+    @Value("${spring.mongodb.port:27017}")
+    private int port;
+
+    @Value("${spring.mongodb.database:new_sstu_database}")
+    private String database;
+
+    @Value("${spring.mongodb.authentication-database}")
+    private String authDb;
+
+    @Value("${spring.mongodb.custom.supplier-login}")
+    private String supplierLogin;
+
+    @Value("${spring.mongodb.custom.supplier-password}")
+    private String supplierPassword;
+
+    @Value("${spring.mongodb.custom.storekeeper-login}")
+    private String storekeeperLogin;
+
+    @Value("${spring.mongodb.custom.storekeeper-password}")
+    private String storekeeperPassword;
+
+    @Value("${spring.mongodb.custom.manager-login}")
+    private String managerLogin;
+
+    @Value("${spring.mongodb.custom.manager-password}")
+    private String managerPassword;
+
+    @Value("${spring.mongodb.custom.unauthorized-login}")
+    private String unauthorizedLogin;
+
+    @Value("${spring.mongodb.custom.unauthorized-password}")
+    private String unauthorizedPassword;
+
+
+    @Bean
+    @Primary
+    public MongoDatabaseFactory mongoDatabaseFactory() {
+        Map<String, MongoDatabaseFactory> factories = new HashMap<>();
+        factories.put("UNAUTHORIZED", new SimpleMongoClientDatabaseFactory(
+                MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", unauthorizedLogin, unauthorizedPassword, host, port, database)), database));
+        factories.put("SUPPLIER", new SimpleMongoClientDatabaseFactory(
+                MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", supplierLogin, supplierPassword, host, port, database)), database));
+        factories.put("STOREKEEPER", new SimpleMongoClientDatabaseFactory(
+                MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", storekeeperLogin, storekeeperPassword, host, port, database)), database));
+        factories.put("MANAGER", new SimpleMongoClientDatabaseFactory(
+                MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", managerLogin, managerPassword, host, port, database)), database));
+
+        return new RoleRoutingMongoDatabaseFactory(factories);
+    }
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory factory){
+        return new MongoTemplate(mongoDatabaseFactory());
+    }
+
+}
+
+
+package edu.mongo10web.infrastructure;
+
+import com.mongodb.ClientSessionOptions;
+import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoDatabase;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoExceptionTranslator;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.RouteMatcher;
+
+import java.util.Map;
+
+public class RoleRoutingMongoDatabaseFactory implements MongoDatabaseFactory {
+
+    private final Map<String, MongoDatabaseFactory> factories;
+    private final PersistenceExceptionTranslator exceptionTranslator = new MongoExceptionTranslator();
+
+    public RoleRoutingMongoDatabaseFactory(Map<String, MongoDatabaseFactory> factories) {
+        this.factories = factories;
+    }
+
+    private MongoDatabaseFactory getVisibleFactory() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null ||!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return factories.get("UNAUTHORIZED");
+        }
+
+        String role = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("UNAUTHORIZED")
+                .replace("ROLE_", "");
+
+        return factories.getOrDefault(role, factories.get("UNAUTHORIZED"));
+    }
+
+    @Override
+    public MongoDatabase getMongoDatabase() throws DataAccessException {
+        return getVisibleFactory().getMongoDatabase();
+    }
+
+    @Override
+    public MongoDatabase getMongoDatabase(String dbName) throws DataAccessException {
+        return getVisibleFactory().getMongoDatabase(dbName);
+    }
+
+    @Override
+    public PersistenceExceptionTranslator getExceptionTranslator() {
+        return this.exceptionTranslator;
+    }
+
+    @Override
+    public ClientSession getSession(ClientSessionOptions options) {
+        return getVisibleFactory().getSession(options);
+    }
+
+    @Override
+    public MongoDatabaseFactory withSession(ClientSession session) {
+        return getVisibleFactory().withSession(session);
+    }
+}
+
+
+package edu.mongo10web.infrastructure;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@EnableWebSecurity
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login", "/css/**", "/js/**", "/error").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/auth/login")
+                        .defaultSuccessUrl("/dashboard")
+                        .failureUrl("/login?error=true")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+}
+
+
+package edu.mongo10web.repository;
+
+import edu.mongo10web.entity.Category;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+
+public interface CategoryRepository extends MongoRepository<Category, String> {
+    public List<Category> findByName(String name);
+}
+
+
+package edu.mongo10web.repository;
+
+import edu.mongo10web.entity.Product;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+
+public interface ProductRepository extends MongoRepository<Product, String> {
+    public List<Product> findByName(String name);
+}
+
+
+package edu.mongo10web.repository;
+
+import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+
+public interface SupplyRepository extends MongoRepository<Supply, String> {
+    public List<Supply> findByStatus(SupplyStatus status);
+
+    public List<Supply> findByProductName(String productName);
+}
+
+
+package edu.mongo10web.repository;
+
+import edu.mongo10web.entity.User;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface UserRepository extends MongoRepository<User, String> {
+    User findByUsername(String username);
+}
+
+
+package edu.mongo10web.service;
+
+import edu.mongo10web.entity.Category;
+import edu.mongo10web.exception.ConflictDataException;
+import edu.mongo10web.exception.InvalidDataFormatException;
+import edu.mongo10web.exception.NotFoundInRepositoryException;
+import edu.mongo10web.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CategoryService {
+    private final CategoryRepository categoryRepository;
+
+    @Autowired
+    public CategoryService(CategoryRepository repository) {
+        this.categoryRepository = repository;
+    }
+
+    public Category create(Category category){
+        String name = category.getName();
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        if (!getByName(name).isEmpty()) throw new ConflictDataException();
+        return this.categoryRepository.save(category);
+    }
+
+    public List<Category> getAll() {
+        return categoryRepository.findAll();
+    }
+
+    public Category getById(String id){
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        return  categoryRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
+    }
+
+    public List<Category> getByName(String name){
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        return  categoryRepository.findByName(name);
+    }
+
+    public Category update(String id, Category updatedCategory){
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        String name = updatedCategory.getName();
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        Category category = getById(id);
+        if(!category.getName().equals(updatedCategory.getName())){
+            List<Category> namedCategory = getByName(name);
+            if(!namedCategory.isEmpty()) throw new ConflictDataException();
+        }
+        category.setName(name);
+        category.setDescription(updatedCategory.getDescription());
+        category.setCriteries(updatedCategory.getCriteries());
+        updatedCategory.setId(category.getId());
+        return categoryRepository.save(category);
+    }
+
+    public void delete(String id){
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        categoryRepository.deleteById(id);
+    }
+}
+
+
+package edu.mongo10web.service;
+
+import edu.mongo10web.entity.User;
+import edu.mongo10web.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MongoUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public MongoUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        if (user == null){
+            throw new UsernameNotFoundException("user not found: " + username);
+        }
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole())
+                .build();
+    }
+}
+
+
+package edu.mongo10web.service;
+
+import edu.mongo10web.entity.Category;
+import edu.mongo10web.entity.Product;
+import edu.mongo10web.exception.ConflictDataException;
+import edu.mongo10web.exception.InvalidDataFormatException;
+import edu.mongo10web.exception.NotFoundInRepositoryException;
+import edu.mongo10web.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ProductService {
+    private final ProductRepository productRepository;
+
+    @Autowired
+    public ProductService(ProductRepository repository) {
+        this.productRepository = repository;
+    }
+
+    public Product create(Product product) {
+        String name = product.getName();
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        if (product.getCost() == null || product.getCost() <= 0) throw new InvalidDataFormatException();
+        if (!getByName(name).isEmpty()) throw new ConflictDataException();
+        return this.productRepository.save(product);
+    }
+
+    public List<Product> getAll() {
+        return productRepository.findAll();
+    }
+
+    public Product getById(String id) {
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        return productRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
+    }
+
+    public List<Product> getByName(String name) {
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        return productRepository.findByName(name);
+    }
+
+    public Product update(String id, Product updatedProduct) {
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        if (updatedProduct.getCost() == null || updatedProduct.getCost() <= 0) throw new InvalidDataFormatException();
+        String name = updatedProduct.getName();
+        if (name==null || name.isBlank()) throw new InvalidDataFormatException();
+        Product product = getById(id);
+        if(!product.getName().equals(updatedProduct.getName())){
+            List<Product> namedCategory = getByName(name);
+            if(!namedCategory.isEmpty()) throw new ConflictDataException();
+        }
+        product.setName(name);
+        product.setCost(updatedProduct.getCost());
+        product.setCategory(updatedProduct.getCategory());
+        product.setManufacturer(updatedProduct.getManufacturer());
+        return productRepository.save(product);
+    }
+
+    public void delete(String id) {
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        productRepository.deleteById(id);
+    }
+}
+
+
+package edu.mongo10web.service;
+
+import edu.mongo10web.entity.Supply;
+import edu.mongo10web.entity.SupplyStatus;
+import edu.mongo10web.exception.InvalidDataFormatException;
+import edu.mongo10web.exception.NotFoundInRepositoryException;
+import edu.mongo10web.repository.SupplyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class SupplyService {
+    private final SupplyRepository supplyRepository;
+
+    @Autowired
+    public SupplyService(SupplyRepository repository) {
+        this.supplyRepository = repository;
+    }
+
+    public Supply create(Supply supply){
+        if(supply.getProduct() == null || supply.getStatus() == null) throw new InvalidDataFormatException();
+        if(supply.getQuantity() == null || supply.getQuantity() <= 0) throw new InvalidDataFormatException();
+        return this.supplyRepository.save(supply);
+    }
+
+    public List<Supply> getAll() {
+        return supplyRepository.findAll();
+    }
+
+    public Supply getById(String id){
+        if (id==null || id.isBlank()) throw new InvalidDataFormatException();
+        return  supplyRepository.findById(id).orElseThrow(NotFoundInRepositoryException::new);
+    }
+
+    public List<Supply> getByStatus(SupplyStatus status){
+        return supplyRepository.findByStatus(status);
+    }
+
+    public List<Supply> getByProductName(String productName){
+        return supplyRepository.findByProductName(productName);
+    }
+
+    public Supply update(String id, Supply updatedSupply){
+        if(updatedSupply.getProduct() == null || updatedSupply.getStatus() == null) throw new InvalidDataFormatException();
+        if(updatedSupply.getQuantity() == null || updatedSupply.getQuantity() <= 0) throw new InvalidDataFormatException();
+        Supply supply = getById(id);
+        supply.setProduct(updatedSupply.getProduct());
+        supply.setStatus(updatedSupply.getStatus());
+        supply.setQuantity(updatedSupply.getQuantity());
+        supply.setSendDateTime(updatedSupply.getSendDateTime());
+        supply.setArriveDateTime(updatedSupply.getArriveDateTime());
+        return supplyRepository.save(supply);
+    }
+
+    public void delete(String id){
+        supplyRepository.deleteById(id);
+    }
+}
+
+

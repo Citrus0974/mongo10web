@@ -1,5 +1,5 @@
 # Настройки
-$targetDir = "C:\Users\Citrus_0974_ThinkPad\Documents\sstu\DB_mongo\Projects\mongo10web"  # Путь к исходной папке
+$targetDir = "C:\Users\Citrus_0974_ThinkPad\Documents\sstu\DB_mongo\Projects\mongo10web\src"  # Путь к исходной папке
 $extension = "*.java"                # Расширение файлов (например, *.txt или *.log)
 $outputFile = "C:\Users\Citrus_0974_ThinkPad\Documents\sstu\DB_mongo\Projects\mongo10web\new.txt" # Путь к итоговому файлу
 

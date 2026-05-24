@@ -8,11 +8,14 @@ import edu.mongo10web.service.CategoryService;
 import edu.mongo10web.service.ProductService;
 import edu.mongo10web.service.SupplyService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 @Controller
 @RequestMapping
@@ -37,8 +40,18 @@ public class WebController {
 
         model.addAttribute("products", productService.getAll());
         model.addAttribute("deliveries", supplyService.getAll());
-        model.addAttribute("categories", categoryService.getAll());
 
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        System.out.println(auth);
+//        System.out.println(auth.getAuthorities().stream().map(a -> a.getAuthority()).toList());
+//        if (auth != null && auth.getAuthorities().stream()
+//                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPPLIER"))) {
+//            model.addAttribute("categories", Collections.emptyList());
+//            System.out.println("inside if");
+//        } else{
+//            model.addAttribute("categories", categoryService.getAll());
+//        }
+        model.addAttribute("categories", categoryService.getAll());
         return "dashboard";
     }
 
@@ -46,7 +59,6 @@ public class WebController {
     @PostMapping("/dashboard/deliveries/create")
     public String createDelivery(@RequestParam String productId, @RequestParam Integer quantity) {
         Product product = productService.getById(productId);
-        //arriveDateTime устанавливается как "now", статус по умолчанию - CREATED
         Supply supply = new Supply(product, quantity, SupplyStatus.CREATED, LocalDateTime.now(), null);
         supplyService.create(supply);
         return "redirect:/dashboard";
