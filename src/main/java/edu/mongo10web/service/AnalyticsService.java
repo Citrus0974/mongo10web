@@ -25,19 +25,22 @@ public class AnalyticsService {
         return mongoTemplate.find(query, Document.class, "product");
     }
 
-    //Поставки с критическими статусами (DISPOSED или GONE)
+    //Поставки с критическими статусами (DISPOSED или GONE) + убывание цены
     public List<Document> getUrgentSupplies() {
         Query query = new Query(
                 new Criteria().orOperator(
                         Criteria.where("status").is("DISPOSED"),
-                        Criteria.where("status").is("GONE")));
+                        Criteria.where("status").is("GONE")))
+                .with(Sort.by(Sort.Direction.DESC, "quantity"));
         return mongoTemplate.find(query, Document.class, "supply");
     }
 
     //Подсчет количества товаров каждого производителя
     public List<Document> getProductsCountByManufacturer() {
         GroupOperation groupOp = Aggregation.group("manufacturer").count().as("totalProducts");
-        Aggregation aggregation = Aggregation.newAggregation(groupOp);
+
+        SortOperation sort = Aggregation.sort(Sort.by(Sort.Direction.DESC, "totalProducts"));
+        Aggregation aggregation = Aggregation.newAggregation(groupOp, sort);
         return mongoTemplate.aggregate(aggregation, "product", Document.class).getMappedResults();
     }
 
@@ -47,8 +50,7 @@ public class AnalyticsService {
     //Общее количество товара на складе и сумма затрат по каждому продукту (только для статусов PLACED и RESERVED)
     public List<Document> getProductStockMetrics() {
         MatchOperation match = Aggregation.match(Criteria.where("status").in("PLACED", "RESERVED"));
-        GroupOperation group = Aggregation.group("product") // Группировка по DBRef ID продукта
-                .sum("quantity").as("totalQuantity");
+        GroupOperation group = Aggregation.group("product").sum("quantity").as("totalQuantity");
 
         // получить человеческое название товара из Product
         LookupOperation lookup = LookupOperation.newLookup()
@@ -56,8 +58,8 @@ public class AnalyticsService {
                 .localField("_id")
                 .foreignField("_id")
                 .as("productDetails");
-
-        Aggregation aggregation = Aggregation.newAggregation(match, group, lookup);
+        SortOperation sort = Aggregation.sort(Sort.by(Sort.Direction.DESC, "totalQuantity"));
+        Aggregation aggregation = Aggregation.newAggregation(match, group, lookup, sort);
         return mongoTemplate.aggregate(aggregation, "supply", Document.class).getMappedResults();
     }
 
@@ -70,7 +72,8 @@ public class AnalyticsService {
                 .foreignField("_id")
                 .as("categoryDetails");
 
-        Aggregation aggregation = Aggregation.newAggregation(group, lookup);
+        SortOperation sort = Aggregation.sort(Sort.by(Sort.Direction.DESC, "avgCost"));
+        Aggregation aggregation = Aggregation.newAggregation(group, lookup, sort);
         return mongoTemplate.aggregate(aggregation, "product", Document.class).getMappedResults();
     }
 

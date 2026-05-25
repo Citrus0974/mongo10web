@@ -56,6 +56,7 @@ public class MongoRoleRoutingConfig {
     @Primary
     public MongoDatabaseFactory mongoDatabaseFactory() {
         Map<String, MongoDatabaseFactory> factories = new HashMap<>();
+
         factories.put("UNAUTHORIZED", new SimpleMongoClientDatabaseFactory(
                 MongoClients.create(String.format("mongodb://%s:%s@%s:%d/%s?authSource=admin", unauthorizedLogin, unauthorizedPassword, host, port, database)), database));
         factories.put("SUPPLIER", new SimpleMongoClientDatabaseFactory(

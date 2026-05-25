@@ -39,25 +39,14 @@ public class WebController {
     public String showDashboard(Model model, HttpSession session) {
 
         model.addAttribute("products", productService.getAll());
-        model.addAttribute("deliveries", supplyService.getAll());
-
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        System.out.println(auth);
-//        System.out.println(auth.getAuthorities().stream().map(a -> a.getAuthority()).toList());
-//        if (auth != null && auth.getAuthorities().stream()
-//                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPPLIER"))) {
-//            model.addAttribute("categories", Collections.emptyList());
-//            System.out.println("inside if");
-//        } else{
-//            model.addAttribute("categories", categoryService.getAll());
-//        }
+        model.addAttribute("supplies", supplyService.getAll());
         model.addAttribute("categories", categoryService.getAll());
         model.addAttribute("statuses", SupplyStatus.values());
         return "dashboard";
     }
 
-    // --- CRUD ПОСТАВОК (SUPPLY) ---
-    @PostMapping("/dashboard/deliveries/create")
+    // SUPPLY
+    @PostMapping("/dashboard/supplies/create")
     public String createDelivery(@RequestParam String productId, @RequestParam Integer quantity) {
         Product product = productService.getById(productId);
         Supply supply = new Supply(product, quantity, SupplyStatus.CREATED, LocalDateTime.now(), null);
@@ -65,17 +54,14 @@ public class WebController {
         return "redirect:/dashboard";
     }
 
-    @PostMapping("/dashboard/deliveries/delete/{id}")
+    @PostMapping("/dashboard/supplies/delete/{id}")
     public String deleteDelivery(@PathVariable String id) {
         supplyService.delete(id);
         return "redirect:/dashboard";
     }
 
-    @PostMapping("/dashboard/deliveries/update/{id}")
-    public String updateDelivery(@PathVariable String id,
-                                 @RequestParam String productId,
-                                 @RequestParam Integer quantity,
-                                 @RequestParam SupplyStatus status) {
+    @PostMapping("/dashboard/supplies/update/{id}")
+    public String updateDelivery(@PathVariable String id, @RequestParam String productId, @RequestParam Integer quantity, @RequestParam SupplyStatus status) {
         Product product = productService.getById(productId);
         Supply existing = supplyService.getById(id);
         existing.setProduct(product);
@@ -85,12 +71,9 @@ public class WebController {
         return "redirect:/dashboard";
     }
 
-    // --- CRUD ТОВАРОВ (PRODUCT) ---
+    // PRODUCTS 
     @PostMapping("/dashboard/products/create")
-    public String createProduct(@RequestParam String name,
-                                @RequestParam String manufacturer,
-                                @RequestParam Integer cost,
-                                @RequestParam String categoryId) {
+    public String createProduct(@RequestParam String name, @RequestParam String manufacturer, @RequestParam Integer cost, @RequestParam String categoryId) {
         Category category = categoryService.getById(categoryId);
         Product product = new Product(name, manufacturer, cost, category);
         productService.create(product);
@@ -104,22 +87,16 @@ public class WebController {
     }
 
     @PostMapping("/dashboard/products/update/{id}")
-    public String updateProduct(@PathVariable String id,
-                                @RequestParam String name,
-                                @RequestParam String manufacturer,
-                                @RequestParam Integer cost,
-                                @RequestParam String categoryId) {
+    public String updateProduct(@PathVariable String id, @RequestParam String name, @RequestParam String manufacturer, @RequestParam Integer cost, @RequestParam String categoryId) {
         Category category = categoryService.getById(categoryId);
         Product updated = new Product(name, manufacturer, cost, category);
         productService.update(id, updated);
         return "redirect:/dashboard";
     }
 
-    // --- CRUD КАТЕГОРИЙ (CATEGORY) ---
+    // CATEGORY
     @PostMapping("/dashboard/categories/create")
-    public String createCategory(@RequestParam String name,
-                                 @RequestParam String description,
-                                 @RequestParam String criteries) {
+    public String createCategory(@RequestParam String name, @RequestParam String description, @RequestParam String criteries) {
         Category category = new Category(name, description, criteries);
         categoryService.create(category);
         return "redirect:/dashboard";
@@ -132,10 +109,7 @@ public class WebController {
     }
 
     @PostMapping("/dashboard/categories/update/{id}")
-    public String updateCategory(@PathVariable String id,
-                                 @RequestParam String name,
-                                 @RequestParam String description,
-                                 @RequestParam String criteries) {
+    public String updateCategory(@PathVariable String id, @RequestParam String name, @RequestParam String description, @RequestParam String criteries) {
         Category updated = new Category(name, description, criteries);
         categoryService.update(id, updated);
         return "redirect:/dashboard";
@@ -154,9 +128,14 @@ public class WebController {
         return "analytics";
     }
 
-    @PostMapping("/auth/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+
+    @GetMapping("/")
+    public String redirectToDashboard(){
+        return "redirect:/dashboard";
     }
 }

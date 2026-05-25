@@ -1,6 +1,5 @@
 package edu.mongo10web.service;
 
-import edu.mongo10web.entity.Category;
 import edu.mongo10web.entity.Product;
 import edu.mongo10web.exception.ConflictDataException;
 import edu.mongo10web.exception.InvalidDataFormatException;

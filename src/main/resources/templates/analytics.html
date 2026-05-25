@@ -22,7 +22,7 @@
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card h-100 shadow-sm">
-            <div class="card-header bg-secondary text-white"><h6>Товары дороже 100 + Сортировка по убыванию</h6></div>
+            <div class="card-header bg-secondary text-white"><h6>Товары дороже 100 + сортировка</h6></div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
                     <li th:each="p : ${expensiveProducts}" class="list-group-item d-flex justify-content-between align-items-center">
@@ -42,7 +42,7 @@
                 <ul class="list-group list-group-flush mt-2">
                     <li th:each="s : ${urgentSupplies}" class="list-group-item d-flex justify-content-between align-items-center">
                         <span>Поставка ID: <code th:text="${s.get('_id')}"></code></span>
-                        <span class="badge bg-danger" th:text="${s.get('status')} + ' | Qty: ' + ${s.get('quantity')}"></span>
+                        <span class="badge bg-danger" th:text="${s.get('status')} + ' | Count: ' + ${s.get('quantity')}"></span>
                     </li>
                 </ul>
             </div>
@@ -89,7 +89,7 @@
 
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm border-primary">
-                <div class="card-header bg-primary text-white"><h6>Средняя стоимость товаров в категориях</h6></div>
+                <div class="card-header bg-primary text-white"><h6>Средняя цена товаров в категориях</h6></div>
                 <div class="card-body">
                     <table class="table table-sm">
                         <thead><tr><th>Категория</th><th>Средняя цена</th></tr></thead>
@@ -106,7 +106,7 @@
 
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm border-primary">
-                <div class="card-header bg-primary text-white"><h6>Суммарный объём поставок производитей + сортировка по убыванию</h6></div>
+                <div class="card-header bg-primary text-white"><h6>Суммарный объём поставок производитей</h6></div>
                 <div class="card-body">
                     <table class="table table-sm">
                         <thead><tr><th>Производитель</th><th>Суммарный объем всех поставок</th></tr></thead>
