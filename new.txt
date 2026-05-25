@@ -48,19 +48,17 @@ public class Main {
         };
     }
 
-    @Bean
+//    @Bean //Init accounts
     public ApplicationRunner userInitializer(edu.mongo10web.repository.UserRepository userRepository,
                                              org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
-            // РћС‡РёС‰Р°РµРј СЃС‚Р°СЂС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ (РґР»СЏ С‚РµСЃС‚РѕРІ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё) Рё Р·Р°РЅРѕСЃРёРј РЅРѕРІС‹С…
+
             userRepository.deleteAll();
 
-            // РџР°СЂРѕР»СЊ РґР»СЏ РІСЃРµС… СѓС‡РµС‚РЅС‹С… Р·Р°РїРёСЃРµР№: "password"
             userRepository.save(new User(null, "supplier", passwordEncoder.encode("password"), "SUPPLIER"));
             userRepository.save(new User(null, "storekeeper", passwordEncoder.encode("password"), "STOREKEEPER"));
             userRepository.save(new User(null, "manager", passwordEncoder.encode("password"), "MANAGER"));
 
-            System.out.println("=== РўР•РЎРўРћР’Р«Р• РџРћР›Р¬Р—РћР’РђРўР•Р›Р РЎРЈР‘Р” РЈРЎРџР•РЁРќРћ Р—РђРџРРЎРђРќР« ===");
             System.out.println("Р›РѕРіРёРЅС‹: supplier / storekeeper / manager. РџР°СЂРѕР»СЊ Сѓ РІСЃРµС…: password");
         };
     }
@@ -266,16 +264,17 @@ public class WebController {
         model.addAttribute("products", productService.getAll());
         model.addAttribute("deliveries", supplyService.getAll());
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(auth);
-        System.out.println(auth.getAuthorities().stream().map(a -> a.getAuthority()).toList());
-        if (auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPPLIER"))) {
-            model.addAttribute("categories", Collections.emptyList());
-            System.out.println("inside if");
-        } else{
-            model.addAttribute("categories", categoryService.getAll());
-        }
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        System.out.println(auth);
+//        System.out.println(auth.getAuthorities().stream().map(a -> a.getAuthority()).toList());
+//        if (auth != null && auth.getAuthorities().stream()
+//                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPPLIER"))) {
+//            model.addAttribute("categories", Collections.emptyList());
+//            System.out.println("inside if");
+//        } else{
+//            model.addAttribute("categories", categoryService.getAll());
+//        }
+        model.addAttribute("categories", categoryService.getAll());
         return "dashboard";
     }
 

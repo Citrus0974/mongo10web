@@ -48,19 +48,17 @@ public class Main {
         };
     }
 
-    @Bean
+//    @Bean //Init accounts
     public ApplicationRunner userInitializer(edu.mongo10web.repository.UserRepository userRepository,
                                              org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
-            // Очищаем старых пользователей (для тестов безопасности) и заносим новых
+
             userRepository.deleteAll();
 
-            // Пароль для всех учетных записей: "password"
             userRepository.save(new User(null, "supplier", passwordEncoder.encode("password"), "SUPPLIER"));
             userRepository.save(new User(null, "storekeeper", passwordEncoder.encode("password"), "STOREKEEPER"));
             userRepository.save(new User(null, "manager", passwordEncoder.encode("password"), "MANAGER"));
 
-            System.out.println("=== ТЕСТОВЫЕ ПОЛЬЗОВАТЕЛИ СУБД УСПЕШНО ЗАПИСАНЫ ===");
             System.out.println("Логины: supplier / storekeeper / manager. Пароль у всех: password");
         };
     }

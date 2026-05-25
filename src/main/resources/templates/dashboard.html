@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="Ru-ru">
 <head>
     <meta charset="UTF-8">
     <title>Панель управления Складом</title>
@@ -37,7 +37,7 @@
                     <h5 class="mb-0">Категории (Categories)</h5>
                 </div>
                 <div class="card-body">
-                    <div sec:authorize="hasRole('ROLE_MANAGER')" class="mb-3 p-3 bg-light rounded border">
+                    <div  class="mb-3 p-3 bg-light rounded border">
                         <h6>Добавить категорию</h6>
                         <form th:action="@{/dashboard/categories/create}" method="post">
                             <div class="mb-2">
@@ -58,14 +58,14 @@
                         <tr>
                             <th>Имя</th>
                             <th>Описание</th>
-                            <th sec:authorize="hasRole('ROLE_MANAGER')">Действия</th>
+                            <th >Действия</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="cat : ${categories}">
                             <td th:text="${cat.name}"></td>
                             <td th:text="${cat.description}"></td>
-                            <td sec:authorize="hasRole('ROLE_MANAGER')">
+                            <td >
                                 <form th:action="@{/dashboard/categories/delete/{id}(id=${cat.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить категорию?')">Удалить</button>
                                 </form>
@@ -83,7 +83,7 @@
                     <h5 class="mb-0">Товары (Products)</h5>
                 </div>
                 <div class="card-body">
-                    <div sec:authorize="hasAnyRole('ROLE_STOREKEEPER', 'ROLE_MANAGER')" class="mb-3 p-3 bg-light rounded border">
+                    <div class="mb-3 p-3 bg-light rounded border">
                         <h6>Добавить товар</h6>
                         <form th:action="@{/dashboard/products/create}" method="post">
                             <div class="mb-2">
@@ -111,7 +111,7 @@
                             <th>Имя</th>
                             <th>Цена</th>
                             <th>Категория</th>
-                            <th sec:authorize="hasRole('ROLE_MANAGER')">Действия</th>
+                            <th >Действия</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -119,7 +119,7 @@
                             <td th:text="${prod.name}"></td>
                             <td th:text="${prod.cost}"></td>
                             <td th:text="${prod.category!= null? prod.category.name : 'Нет'}"></td>
-                            <td sec:authorize="hasRole('ROLE_MANAGER')">
+                            <td >
                                 <form th:action="@{/dashboard/products/delete/{id}(id=${prod.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить товар?')">Удалить</button>
                                 </form>
@@ -137,7 +137,7 @@
                     <h5 class="mb-0">Поставки (Supplies)</h5>
                 </div>
                 <div class="card-body">
-                    <div sec:authorize="hasAnyRole('ROLE_SUPPLIER', 'ROLE_MANAGER')" class="mb-3 p-3 bg-light rounded border">
+                    <div class="mb-3 p-3 bg-light rounded border">
                         <h6>Новая поставка</h6>
                         <form th:action="@{/dashboard/deliveries/create}" method="post">
                             <div class="mb-2">
@@ -159,7 +159,7 @@
                             <th>Товар</th>
                             <th>Кол-во</th>
                             <th>Статус</th>
-                            <th sec:authorize="hasRole('ROLE_MANAGER')">Действия</th>
+                            <th >Действия</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -167,7 +167,7 @@
                             <td th:text="${del.product!= null? del.product.name : 'Нет'}"></td>
                             <td th:text="${del.quantity}"></td>
                             <td><span class="badge bg-secondary" th:text="${del.status}"></span></td>
-                            <td sec:authorize="hasRole('ROLE_MANAGER')">
+                            <td >
                                 <form th:action="@{/dashboard/deliveries/delete/{id}(id=${del.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить поставку?')">Удалить</button>
                                 </form>
