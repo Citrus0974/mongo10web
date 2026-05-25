@@ -20,7 +20,7 @@ public class Main {
     }
 
 //    @Bean
-    ApplicationRunner runner(CategoryRepository repository, ProductRepository productRepository, SupplyRepository supplyRepository){
+    ApplicationRunner runner1(CategoryRepository repository, ProductRepository productRepository, SupplyRepository supplyRepository){
         return args -> {
             repository.deleteAll();
             productRepository.deleteAll();
@@ -49,7 +49,7 @@ public class Main {
     }
 
 //    @Bean //Init accounts
-    public ApplicationRunner userInitializer(edu.mongo10web.repository.UserRepository userRepository,
+    public ApplicationRunner accounts(edu.mongo10web.repository.UserRepository userRepository,
                                              org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
 
@@ -62,4 +62,52 @@ public class Main {
             System.out.println("Логины: supplier / storekeeper / manager. Пароль у всех: password");
         };
     }
+
+    //@Bean
+    ApplicationRunner runner2(CategoryRepository categoryRepository, ProductRepository productRepository, SupplyRepository supplyRepository){
+        return args -> {
+            //категории
+            Category grocery = new Category("grocery", "Бакалея и крупы", "Сухой склад");
+            categoryRepository.save(grocery);
+            Category confectionery = new Category("confectionery", "Кондитерские изделия", "Обычные условия");
+            categoryRepository.save(confectionery);
+            Category meat = new Category("meat", "Мясной отдел", "Охлажденные, до +4C");
+            categoryRepository.save(meat);
+
+            //товары
+            Product rice = new Product("Рис Басмати 1кг", "Мистраль", 180, grocery);
+            Product pasta = new Product("Макароны Перья 500г", "Макфа", 85, grocery);
+
+            Product chocolate = new Product("Шоколад Горький", "Бабаевский", 120, confectionery);
+            Product cookies = new Product("Печенье Овсяное", "Посиделкино", 110, confectionery);
+            Product cake = new Product("Торт Прага", "Бабаевский", 650, confectionery);
+
+            Product beef = new Product("Фарш говяжий 400г", "Мираторг", 290, meat);
+            Product chicken = new Product("Филе цыпленка 1кг", "Петелинка", 380, meat);
+
+            productRepository.save(rice);
+            productRepository.save(pasta);
+            productRepository.save(chocolate);
+            productRepository.save(cookies);
+            productRepository.save(cake);
+            productRepository.save(beef);
+            productRepository.save(chicken);
+
+            // поставки
+            LocalDateTime now = LocalDateTime.now();
+
+            supplyRepository.save(new Supply(rice, 150, SupplyStatus.PLACED, now, null));
+            supplyRepository.save(new Supply(pasta, 80, SupplyStatus.CREATED, now, null));
+
+            supplyRepository.save(new Supply(chocolate, 200, SupplyStatus.PLACED, now, null));
+            supplyRepository.save(new Supply(cookies, 120, SupplyStatus.RESERVED, now, null));
+            supplyRepository.save(new Supply(cake, 15, SupplyStatus.DISPOSED, now, null));
+            supplyRepository.save(new Supply(cake, 5, SupplyStatus.GONE, now, null));
+
+            supplyRepository.save(new Supply(beef, 90, SupplyStatus.PLACED, now, null));
+            supplyRepository.save(new Supply(chicken, 110, SupplyStatus.CREATED, now, null));
+            supplyRepository.save(new Supply(chicken, 40, SupplyStatus.RESERVED, now, null));
+        };
+    }
+
 }

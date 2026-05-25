@@ -11,6 +11,9 @@
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container-fluid px-4">
         <span class="navbar-brand">Управление БД</span>
+        <div class="d-flex align-items-center me-auto">
+            <a th:href="@{/analytics}" class="btn btn-outline-info btn-sm text-white border-info ms-3">Аналитика и Агрегация</a>
+        </div>
         <div class="d-flex align-items-center">
             <span class="text-light me-3">
                 Пользователь: <strong sec:authentication="name">User</strong>
@@ -65,10 +68,16 @@
                         <tr th:each="cat : ${categories}">
                             <td th:text="${cat.name}"></td>
                             <td th:text="${cat.description}"></td>
-                            <td >
-                                <form th:action="@{/dashboard/categories/delete/{id}(id=${cat.id})}" method="post">
-                                    <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить категорию?')">Удалить</button>
-                                </form>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-warning btn-xs"
+                                            data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                            th:data-id="${cat.id}" th:data-name="${cat.name}"
+                                            th:data-desc="${cat.description}" th:data-crit="${cat.criteries}">Edit</button>
+                                    <form th:action="@{/dashboard/categories/delete/{id}(id=${cat.id})}" method="post" class="m-0">
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить?')">Х</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -118,11 +127,18 @@
                         <tr th:each="prod : ${products}">
                             <td th:text="${prod.name}"></td>
                             <td th:text="${prod.cost}"></td>
-                            <td th:text="${prod.category!= null? prod.category.name : 'Нет'}"></td>
-                            <td >
-                                <form th:action="@{/dashboard/products/delete/{id}(id=${prod.id})}" method="post">
-                                    <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить товар?')">Удалить</button>
-                                </form>
+                            <td th:text="${prod.category != null ? prod.category.name : 'Нет'}"></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-warning btn-xs"
+                                            data-bs-toggle="modal" data-bs-target="#editProductModal"
+                                            th:data-id="${prod.id}" th:data-name="${prod.name}"
+                                            th:data-manufacturer="${prod.manufacturer}" th:data-cost="${prod.cost}"
+                                            th:data-catid="${prod.category != null ? prod.category.id : ''}">Edit</button>
+                                    <form th:action="@{/dashboard/products/delete/{id}(id=${prod.id})}" method="post" class="m-0">
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить?')">Х</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -164,13 +180,19 @@
                         </thead>
                         <tbody>
                         <tr th:each="del : ${deliveries}">
-                            <td th:text="${del.product!= null? del.product.name : 'Нет'}"></td>
+                            <td th:text="${del.product != null ? del.product.name : 'Нет'}"></td>
                             <td th:text="${del.quantity}"></td>
                             <td><span class="badge bg-secondary" th:text="${del.status}"></span></td>
-                            <td >
-                                <form th:action="@{/dashboard/deliveries/delete/{id}(id=${del.id})}" method="post">
-                                    <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить поставку?')">Удалить</button>
-                                </form>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-warning btn-xs"
+                                            data-bs-toggle="modal" data-bs-target="#editDeliveryModal"
+                                            th:data-id="${del.id}" th:data-prodid="${del.product != null ? del.product.id : ''}"
+                                            th:data-qty="${del.quantity}" th:data-status="${del.status}">Edit</button>
+                                    <form th:action="@{/dashboard/deliveries/delete/{id}(id=${del.id})}" method="post" class="m-0">
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить?')">Х</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         </tbody>
@@ -189,5 +211,99 @@
           border-radius: 0.2rem;
       }
 </style>
+
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <form id="editCategoryForm" method="post">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Редактировать категорию</h5></div>
+                <div class="modal-body">
+                    <input type="text" id="editCatName" name="name" class="form-control mb-2" required>
+                    <input type="text" id="editCatDesc" name="description" class="form-control mb-2" required>
+                    <input type="text" id="editCatCrit" name="criteries" class="form-control mb-2" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <form id="editProductForm" method="post">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Редактировать товар</h5></div>
+                <div class="modal-body">
+                    <input type="text" id="editProdName" name="name" class="form-control mb-2" required>
+                    <input type="text" id="editProdManuf" name="manufacturer" class="form-control mb-2" required>
+                    <input type="number" id="editProdCost" name="cost" class="form-control mb-2" required>
+                    <select id="editProdCat" name="categoryId" class="form-select mb-2" required>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="editDeliveryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <form id="editDeliveryForm" method="post">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Редактировать поставку</h5></div>
+                <div class="modal-body">
+                    <select id="editDelProd" name="productId" class="form-select mb-2" required>
+                        <option th:each="prod : ${products}" th:value="${prod.id}" th:text="${prod.name}"></option>
+                    </select>
+                    <input type="number" id="editDelQty" name="quantity" class="form-control mb-2" required>
+                    <select id="editDelStatus" name="status" class="form-select mb-2" required>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}"></option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Скрипт для динамического подставления данных в модальные окна
+    document.getElementById('editCategoryModal').addEventListener('show.bs.modal', function (event) {
+        let button = event.relatedTarget;
+        document.getElementById('editCategoryForm').action = '/dashboard/categories/update/' + button.getAttribute('data-id');
+        document.getElementById('editCatName').value = button.getAttribute('data-name');
+        document.getElementById('editCatDesc').value = button.getAttribute('data-desc');
+        document.getElementById('editCatCrit').value = button.getAttribute('data-crit');
+    });
+
+    document.getElementById('editProductModal').addEventListener('show.bs.modal', function (event) {
+        let button = event.relatedTarget;
+        document.getElementById('editProductForm').action = '/dashboard/products/update/' + button.getAttribute('data-id');
+        document.getElementById('editProdName').value = button.getAttribute('data-name');
+        document.getElementById('editProdManuf').value = button.getAttribute('data-manufacturer');
+        document.getElementById('editProdCost').value = button.getAttribute('data-cost');
+        document.getElementById('editProdCat').value = button.getAttribute('data-catid');
+    });
+
+    document.getElementById('editDeliveryModal').addEventListener('show.bs.modal', function (event) {
+        let button = event.relatedTarget;
+        document.getElementById('editDeliveryForm').action = '/dashboard/deliveries/update/' + button.getAttribute('data-id');
+        document.getElementById('editDelProd').value = button.getAttribute('data-prodid');
+        document.getElementById('editDelQty').value = button.getAttribute('data-qty');
+        document.getElementById('editDelStatus').value = button.getAttribute('data-status');
+    });
+</script>
+
 </body>
 </html>

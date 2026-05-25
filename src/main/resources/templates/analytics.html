@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Аналитика</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container-fluid px-4">
+        <span class="navbar-brand">Аналитика и агрегация</span>
+        <a th:href="@{/dashboard}" class="btn btn-outline-light btn-sm">Назад на главную</a>
+    </div>
+</nav>
+
+<div th:if="${databaseError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <h5 class="alert-heading">Ошибка!</h5>
+    <p th:text="${databaseError}" class="mb-0"></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white"><h6>Товары дороже 100 + Сортировка по убыванию</h6></div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li th:each="p : ${expensiveProducts}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <span th:text="${p.get('name')} + ' (' + ${p.get('manufacturer')} + ')'"></span>
+                        <span class="badge bg-primary" th:text="${p.get('cost')}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white"><h6>Неактивные поставки</h6></div>
+            <div class="card-body">
+                <small class="text-muted blockquote-footer">Статус DISPOSED или GONE</small>
+                <ul class="list-group list-group-flush mt-2">
+                    <li th:each="s : ${urgentSupplies}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Поставка ID: <code th:text="${s.get('_id')}"></code></span>
+                        <span class="badge bg-danger" th:text="${s.get('status')} + ' | Qty: ' + ${s.get('quantity')}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white"><h6>Количество товаров по производителям</h6></div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead><tr><th>Производитель</th><th>Кол-во товаров</th></tr></thead>
+                    <tbody>
+                    <tr th:each="m : ${manufacturersCount}">
+                        <td th:text="${m.get('_id')} != null ? ${m.get('_id')} : 'Не указан'"></td>
+                        <td th:text="${m.get('totalProducts')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="my-4 text-primary">Агреграция</h4>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white"><h6>Остаток на складе (PLACED/RESERVED)</h6></div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead><tr><th>Товар</th><th>Всего на складе</th></tr></thead>
+                        <tbody>
+                        <tr th:each="sm : ${stockMetrics}">
+                            <td th:text="${sm.get('productDetails') != null && !sm.get('productDetails').isEmpty()} ? ${sm.get('productDetails').get(0).get('name')} : 'Неизвестный товар'"></td>
+                            <td class="fw-bold text-success" th:text="${sm.get('totalQuantity')}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white"><h6>Средняя стоимость товаров в категориях</h6></div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead><tr><th>Категория</th><th>Средняя цена</th></tr></thead>
+                        <tbody>
+                        <tr th:each="ca : ${categoryAvgCost}">
+                            <td th:text="${ca.get('categoryDetails') != null && !ca.get('categoryDetails').isEmpty()} ? ${ca.get('categoryDetails').get(0).get('name')} : 'Без категории'"></td>
+                            <td th:text="${#numbers.formatDecimal(ca.get('avgCost'), 1, 2)}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white"><h6>Суммарный объём поставок производитей + сортировка по убыванию</h6></div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead><tr><th>Производитель</th><th>Суммарный объем всех поставок</th></tr></thead>
+                        <tbody>
+                        <tr th:each="tm : ${topManufacturers}">
+                            <td th:text="${tm.get('_id')}"></td>
+                            <td th:text="${tm.get('totalSuppliedVolume')}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
